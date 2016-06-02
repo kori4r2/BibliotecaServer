@@ -6,6 +6,7 @@ public class Book {
 		int batatao = 10;
 		batatao = 20;
 		batatao = 30;
+		batatao = 50;
 	}
 
 }
