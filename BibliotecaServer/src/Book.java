@@ -5,7 +5,7 @@ public class Book {
 		// TODO Auto-generated method stub
 		int batatao = 10;
 		batatao = 20;
-		batatao = 30;
+		batatao = 40;
 	}
 
 }
