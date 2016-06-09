@@ -29,9 +29,6 @@ public class Usuario {
 		return ID;
 	}
 	
-	public String getSenha(){
-		return Senha;
-	}
 	//retorna o arraylist uploads
 	public ArrayList<Livro> getUploads(){
 		return Uploads;
@@ -89,7 +86,7 @@ public class Usuario {
 		for(i=0; i<size; i++){
 			System.out.println(i+1 + "- " + Uploads.get(i).getTitulo());
 		}
-		return 1;
+		return i;
 	}
 	//Funcao que imprime a lista de Emprestimos do usuario
 	public int printEmprestimos(){
@@ -99,7 +96,7 @@ public class Usuario {
 		for(i=0; i<size; i++){
 			System.out.println(i+1 + "- " + Emprestimos.get(i).getTitulo());
 		}
-		return 1;
+		return i;
 	}
 	
 	//-----------Insert/Remove--------------//
