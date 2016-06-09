@@ -7,6 +7,7 @@ public class Livro {
 	private String Editora;
 	private String Categoria;
 	private String pdfName;
+	private int Acervo;
 	//Construtor que seta o nome do pdf e titulo do livro
 	public Livro(String pdfname, String title){
 		pdfName = pdfname;
@@ -14,6 +15,10 @@ public class Livro {
 	}
 	
 	// --------- Getters --------------------------//
+	public int getAcervo(){
+		return Acervo;
+	}
+	
 	public String getTitulo(){
 		if(Titulo == null)return "Book has no title";
 		return Titulo;
@@ -71,6 +76,47 @@ public class Livro {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
+	}
+	
+	//----------Add/Rmv-------------//
+	public int addAcervo(int quant){
+		if(quant>0 && Acervo>=0){
+			Acervo += quant;
+			return Acervo;
+		}
+		else{
+			System.out.println("Nao foi possivel adicionar");
+			return 0;
+		}
+	}
+	
+	public int rmvAcervo(int quant){
+		if(quant>0 && Acervo>=quant){
+			Acervo -= quant;
+			return Acervo;
+		}
+		else{
+			System.out.println("Nao foi possivel remover");
+			return 0;
+		}
+	}
+	
+	//---------------Contem------------------//
+	
+	public boolean contemTitulo(String title){
+		return this.getTitulo().contains(title);
+	}
+	
+	public boolean contemAutores(String autores){
+		return this.getAutores().contains(autores);
+	}
+	
+	public boolean contemEditora(String editora){
+		return this.getEditora().contains(editora);
+	}
+	
+	public boolean contemCategoria(String category){
+		return this.getCategoria().contains(category);
 	}
 
 }

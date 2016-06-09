@@ -1,11 +1,18 @@
 import java.util.ArrayList;
 
-public class Usuario {
+public class Usuario implements Comparable<Usuario>{
 
 	private int ID;
 	private String Senha;
 	private ArrayList<Livro> Uploads;
 	private ArrayList<Livro> Emprestimos;
+	
+	@Override
+	public int compareTo(Usuario user1){
+		return Integer.compare(this.getID(), user1.getID());
+		
+	}
+	
 	
 	/*Construtor da classe Usuario recebe como parametros:
 		- novoID = ID do usuário a ser criado
@@ -154,8 +161,140 @@ public class Usuario {
 		return true;
 	}
 	
+	//------------------ Search Uploads --------------------------//
 	
-	
+		public ArrayList<String> searchTitleUploads(String title){
+			ArrayList<String> ans = new ArrayList<String>();
+			int size = Uploads.size();
+			int i;
+			for(i=0; i<size; i++){
+				if(Uploads.get(i).contemTitulo(title)){
+					ans.add(Uploads.get(i).getTitulo());
+				}
+			}
+			if(ans.isEmpty()==true){
+				System.out.println("No results found");;
+				return null;
+			}
+			return ans;
+		}
+		
+		public ArrayList<String> searchCategoriaUploads(String category){
+			ArrayList<String> ans = new ArrayList<String>();
+			int size = Uploads.size();
+			int i;
+			for(i=0; i<size; i++){
+				if(Uploads.get(i).contemCategoria(category)){
+					ans.add(Uploads.get(i).getCategoria());
+				}
+			}
+			if(ans.isEmpty()==true){
+				System.out.println("No results found");;
+				return null;
+			}
+			return ans;
+		}
+
+		public ArrayList<String> searchEditoraUploads(String editora){
+			ArrayList<String> ans = new ArrayList<String>();
+			int size = Uploads.size();
+			int i;
+			for(i=0; i<size; i++){
+				if(Uploads.get(i).contemEditora(editora)){
+					ans.add(Uploads.get(i).getEditora());
+				}
+			}
+			if(ans.isEmpty()==true){
+				System.out.println("No results found");;
+				return null;
+			}
+			return ans;
+		}
+		
+		public ArrayList<String> searchAutoresUploads(String autor){
+			ArrayList<String> ans = new ArrayList<String>();
+			int size = Uploads.size();
+			int i;
+			for(i=0; i<size; i++){
+				if(Uploads.get(i).contemAutores(autor)){
+					ans.add(Uploads.get(i).getAutores());
+				}
+			}
+			if(ans.isEmpty()==true){
+				System.out.println("No results found");;
+				return null;
+			}
+			return ans;
+		}
+		
+		
+		//------------------ Search Emprestimos --------------------------//
+		
+			public ArrayList<String> searchTitleEmprestimos(String title){
+				ArrayList<String> ans = new ArrayList<String>();
+				int size = Emprestimos.size();
+				int i;
+				for(i=0; i<size; i++){
+					if(Emprestimos.get(i).contemTitulo(title)){
+						ans.add(Emprestimos.get(i).getTitulo());
+					}
+				}
+				if(ans.isEmpty()==true){
+					System.out.println("No results found");;
+					return null;
+				}
+				return ans;
+			}
+			
+			public ArrayList<String> searchCategoriaEmprestimos(String category){
+				ArrayList<String> ans = new ArrayList<String>();
+				int size = Emprestimos.size();
+				int i;
+				for(i=0; i<size; i++){
+					if(Emprestimos.get(i).contemCategoria(category)){
+						ans.add(Emprestimos.get(i).getCategoria());
+					}
+				}
+				if(ans.isEmpty()==true){
+					System.out.println("No results found");;
+					return null;
+				}
+				return ans;
+			}
+
+			public ArrayList<String> searchEditoraEmprestimos(String editora){
+				ArrayList<String> ans = new ArrayList<String>();
+				int size = Emprestimos.size();
+				int i;
+				for(i=0; i<size; i++){
+					if(Emprestimos.get(i).contemEditora(editora)){
+						ans.add(Emprestimos.get(i).getEditora());
+					}
+				}
+				if(ans.isEmpty()==true){
+					System.out.println("No results found");;
+					return null;
+				}
+				return ans;
+			}
+			
+			public ArrayList<String> searchAutoresEmprestimos(String autor){
+				ArrayList<String> ans = new ArrayList<String>();
+				int size = Emprestimos.size();
+				int i;
+				for(i=0; i<size; i++){
+					if(Emprestimos.get(i).contemAutores(autor)){
+						ans.add(Emprestimos.get(i).getAutores());
+					}
+				}
+				if(ans.isEmpty()==true){
+					System.out.println("No results found");;
+					return null;
+				}
+				return ans;
+			}
+						
+			
 	public static void main(String[] args) {
 		
 	}
