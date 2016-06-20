@@ -75,7 +75,7 @@ public class Interface extends JFrame implements ActionListener{
 	}
 	
 	private JComponent getUsuarioLayout(){
-		usuario2 = new JTextField("Usuário: ");
+		usuario2 = new JTextField("Usuário:");
 		usuario2.setEditable(false);
 		usuario2.setSize(20, 10);
 		
@@ -93,7 +93,7 @@ public class Interface extends JFrame implements ActionListener{
 	}
 	
 	private JComponent getSenhaLayout(){
-		senha2 = new JTextField("Senha: ");
+		senha2 = new JTextField("Senha:");
 		senha2.setEditable(false);
 		senha2.setSize(20, 10);
 		
