@@ -1,46 +1,45 @@
-
 public class Livro {
 	
-	private String Titulo;
-	private String Autores;
-	private int Edicao;
-	private String Editora;
-	private String Categoria;
+	private String titulo;
+	private String autores;
+	private int edicao;
+	private String editora;
+	private String categoria;
 	private String pdfName;
-	private int Acervo;
+	private int acervo;
 	//Construtor que seta o nome do pdf e titulo do livro
 	public Livro(String pdfname, String title){
 		pdfName = pdfname;
-		Titulo = title;
+		titulo = title;
 	}
 	
 	// --------- Getters --------------------------//
 	public int getAcervo(){
-		return Acervo;
+		return acervo;
 	}
 	
 	public String getTitulo(){
-		if(Titulo == null)return "Book has no title";
-		return Titulo;
+		if(titulo == null)return "Book has no title";
+		return titulo;
 	}
 	
 	public String getAutores(){
-		if(Autores == null)return "Autores nao especificados";
-		return Autores;
+		if(autores == null)return "Autores nao especificados";
+		return autores;
 	}
 	
 	public String getEditora(){
-		if(Editora == null)return "Editora nao especificada";
-		return Editora;
+		if(editora == null)return "Editora nao especificada";
+		return editora;
 	}
 	
 	public String getCategoria(){
-		if(Categoria == null)return "Categoria nao especificada";
-		return Categoria;
+		if(categoria == null)return "Categoria nao especificada";
+		return categoria;
 	}
 	
 	public int getEdicao(){
-		return Edicao;
+		return edicao;
 	}
 	
 	public String getPdf(){
@@ -50,27 +49,31 @@ public class Livro {
 	//------------Setters------------------------//
 	
 	public void setTitulo(String title){
-		Titulo = title;
+		titulo = title;
 	}
 	
-	public void setAutores(String autores){
-		Autores = autores;
+	public void setAutores(String a){
+		autores = a;
 	}
 	
-	public void setEditora(String editora){
-		Editora = editora;
+	public void setEditora(String e){
+		editora = e;
 	}
 	
-	public void setCategoria(String categoria){
-		Categoria = categoria;
+	public void setCategoria(String c){
+		categoria = c;
 	}
 	
 	public void setEdicao(int edition){
-		Edicao = edition;
+		edicao = edition;
 	}
 	
-	public void setPdfName(String pdfname){
-		pdfName = pdfname;
+	public void setPdfName(String pdf){
+		pdfName = pdf;
+	}
+
+	public boolean equals(Livro l){
+		return titulo.equals(l.getTitulo());
 	}
 	
 	public static void main(String[] args) {
@@ -80,9 +83,9 @@ public class Livro {
 	
 	//----------Add/Rmv-------------//
 	public int addAcervo(int quant){
-		if(quant>0 && Acervo>=0){
-			Acervo += quant;
-			return Acervo;
+		if(quant>0 && acervo>=0){
+			acervo += quant;
+			return acervo;
 		}
 		else{
 			System.out.println("Nao foi possivel adicionar");
@@ -91,9 +94,9 @@ public class Livro {
 	}
 	
 	public int rmvAcervo(int quant){
-		if(quant>0 && Acervo>=quant){
-			Acervo -= quant;
-			return Acervo;
+		if(quant>0 && acervo>=quant){
+			acervo -= quant;
+			return acervo;
 		}
 		else{
 			System.out.println("Nao foi possivel remover");
