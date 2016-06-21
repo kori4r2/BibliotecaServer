@@ -1,7 +1,21 @@
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Scanner;
+
+import javax.imageio.ImageIO;
 
 public class TestClient{
 
@@ -9,8 +23,8 @@ public class TestClient{
 		public void run(){
 			String answer = new String("");
 			try{
-				while(server.hasNextLine() && !endTest){
-					lastLine = server.nextLine();
+				while(entrada.hasNextLine()){
+					lastLine = entrada.nextLine();
 					System.out.println(lastLine);
 					if(lastLine.equals("disconnect")){
 						disconnect();
@@ -19,8 +33,8 @@ public class TestClient{
 					//System.out.println(lastLine);
 					commandReceived = true;
 					commandProcessed = false;
-//					while(!commandProcessed){
-//					}
+					while(!commandProcessed){
+					}
 				}
 			}catch(Exception e){
 			}
@@ -28,29 +42,81 @@ public class TestClient{
 	}
 
 
-	private Socket client;
-	public volatile boolean endTest;
+	private Socket socket;
 	private PrintStream saida;
 	private Scanner entrada;
-	private Scanner server;
 	public volatile String lastLine;
 	private answerGetter read;
-	private volatile boolean commandReceived;
-	private volatile boolean commandProcessed;
+	public volatile boolean commandReceived;
+	public volatile boolean commandProcessed;
 
 	// Construtor
 	public TestClient() throws Exception{
-		endTest = false;
-		//client = new Socket("192.168.182.91", 9669);
-		client = new Socket("127.0.0.1", 9669);
-		entrada = new Scanner(System.in);
-		saida = new PrintStream(client.getOutputStream());
-		server = new Scanner(client.getInputStream());
+		//socket = new Socket("192.168.182.91", 9669);
+		socket = new Socket("127.0.0.1", 9669);
+		saida = new PrintStream(socket.getOutputStream());
+		entrada = new Scanner(socket.getInputStream());
 	}
 
 	// Envia uma string para o servidor
 	public void sendCommand(String s){
 		saida.println(s);
+	}
+
+	public void sendFile(String filepath) throws Exception{
+		File file = null;
+		Path pdfpath = null;
+		try{
+			file = new File(filepath);
+			pdfpath = Paths.get(filepath);
+		}catch(Exception e){
+			System.out.println("Nome de arquivo invalido (" + filepath + ")");
+			return;
+		}
+		saida.println("upload");
+		String[] aux = filepath.split("/");
+		saida.println(aux[aux.length - 1]);
+
+		while(!commandReceived){
+		}
+		commandReceived = false;
+		commandProcessed = true;
+
+		if(lastLine.equals("upload")){
+			OutputStream outStream = (OutputStream)saida;
+
+			if(file.length() > Integer.MAX_VALUE)
+				System.out.println("file is too big");
+			int fileSize = (int)file.length();
+//			System.out.println("File size in bytes = " + fileSize);
+			byte[] size = ByteBuffer.allocate(4).putInt(fileSize).array();
+
+			byte[] byteArray = Files.readAllBytes(pdfpath);
+//			System.out.println("array size = " + byteArray.length);
+
+			outStream.write(size);
+			outStream.write(byteArray, 0, fileSize);
+			outStream.flush();
+			saida.println("uploaded");
+		}
+	}
+
+
+	public BufferedImage getImage() throws Exception{
+		System.out.println("Receiving image...");
+		InputStream inStream = socket.getInputStream();
+		byte[] sizeAr = new byte[4];
+		inStream.read(sizeAr);
+		int size = ByteBuffer.wrap(sizeAr).asIntBuffer().get();
+		System.out.println("size = " + size);
+		byte[] imageAr = new byte[size];
+		int bytesRead = 0;
+		while(bytesRead < size){
+			bytesRead += inStream.read(imageAr, bytesRead, size-bytesRead);
+		}
+		BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageAr));
+		System.out.println("Image Received");
+		return image;
 	}
 	
 	public void getAnswers(){
@@ -61,31 +127,56 @@ public class TestClient{
 	public void disconnect() throws IOException{
 		saida.close();
 		entrada.close();
-		server.close();
-		client.close();
+		socket.close();
 	}
 
 	public static void main(String[] args) throws Exception{
 		TestClient tc = new TestClient();
 		tc.getAnswers();
+		while(!tc.commandReceived){
+		}
+		tc.commandReceived = false;
+		tc.commandProcessed = true;
+
 		String testCommand = "login";
 		tc.sendCommand(testCommand);
 		testCommand = "12345";
 		tc.sendCommand(testCommand);
 		testCommand = "senha";
 		tc.sendCommand(testCommand);
+		while(!tc.commandReceived){
+		}
+		tc.commandReceived = false;
+		tc.commandProcessed = true;
+
 		testCommand = "open";
 		tc.sendCommand(testCommand);
 		testCommand = "teste";
 		tc.sendCommand(testCommand);
+		while(!tc.commandReceived){
+		}
+		if(tc.lastLine.equals("reading")){
+			// receber imagem
+			BufferedImage image = tc.getImage();
+			File outFile = new File("../testImage/test.png");
+			ImageIO.write(image, "png", outFile);
+			// escrever num arquivo pra testar
+		}
+		tc.commandReceived = false;
+		tc.commandProcessed = true;
+
+		tc.sendFile("../testPDF/Interface.pdf");
+		while(!tc.commandReceived){
+		}
+		tc.commandReceived = false;
+		tc.commandProcessed = true;
+
 		testCommand = "disconnect";
 		tc.sendCommand(testCommand);
 //		String input = EntradaTeclado.leString();
 //		while(!input.equals("sair")){
 //			tc.sendCommand(input);
 //		}
-		while(tc.endTest){
-		}
 //		tc.disconnect();
 	}
 }

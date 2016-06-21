@@ -11,6 +11,7 @@ public class Livro {
 	public Livro(String pdfname, String title){
 		pdfName = pdfname;
 		titulo = title;
+		acervo = 1;
 	}
 	
 	// --------- Getters --------------------------//

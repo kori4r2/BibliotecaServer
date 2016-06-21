@@ -28,6 +28,7 @@ public class Interface extends JFrame implements ActionListener{
 		super("Teste");
 		
 		this.setVisible(true);
+		setResizable(false);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setSize(20, 20);
 		
@@ -75,7 +76,7 @@ public class Interface extends JFrame implements ActionListener{
 	}
 	
 	private JComponent getUsuarioLayout(){
-		usuario2 = new JTextField("Usuário:");
+		usuario2 = new JTextField("Usuario:");
 		usuario2.setEditable(false);
 		usuario2.setSize(20, 10);
 		
@@ -130,8 +131,10 @@ public class Interface extends JFrame implements ActionListener{
 		pane.remove(botao);
 		pane.setVisible(false);
 		pane.add(botao);
+		botao.setPreferredSize(new Dimension(400, 400));
+//		pane.setSize(400, 400);
+		pack();
 		pane.setVisible(true);
-		
 	}
 
 }

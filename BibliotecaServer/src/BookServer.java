@@ -39,7 +39,7 @@ public class BookServer{
 		runningThreads = new Vector<UserThread>(1, 5);
 		userList = new Vector<Usuario>(1, 5);
 		bookList = new Vector<Livro>(1, 5);
-		Livro teste = new Livro("PDFtest.pdf", "teste");
+		Livro teste = new Livro("PDFTest.pdf", "teste");
 		bookList.add(teste);
 		sorted = true;
 	}
@@ -73,9 +73,18 @@ public class BookServer{
 		return null;
 	}
 
-	public Livro searchBook(String title){
+	public Livro searchBookTitle(String title){
 		for(Livro l : bookList){
 			if(l.getTitulo().equals(title)){
+				return l;
+			}
+		}
+		return null;
+	}
+
+	public Livro searchBookPDF(String filename){
+		for(Livro l : bookList){
+			if(l.getPdf().equals(filename)){
 				return l;
 			}
 		}
