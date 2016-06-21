@@ -56,11 +56,22 @@ public class TestClient{
 		socket = new Socket("127.0.0.1", 9669);
 		saida = new PrintStream(socket.getOutputStream());
 		entrada = new Scanner(socket.getInputStream());
+		commandReceived = false;
 	}
 
 	// Envia uma string para o servidor
 	public void sendCommand(String s){
 		saida.println(s);
+	}
+
+	public void waitForResponse(){
+		while(!commandReceived){
+		}
+	}
+
+	public void responseProcessed(){
+		commandProcessed = true;
+		commandReceived = false;
 	}
 
 	public void sendFile(String filepath) throws Exception{
@@ -108,7 +119,6 @@ public class TestClient{
 		byte[] sizeAr = new byte[4];
 		inStream.read(sizeAr);
 		int size = ByteBuffer.wrap(sizeAr).asIntBuffer().get();
-		System.out.println("size = " + size);
 		byte[] imageAr = new byte[size];
 		int bytesRead = 0;
 		while(bytesRead < size){
