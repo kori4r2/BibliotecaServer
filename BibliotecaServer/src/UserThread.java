@@ -104,6 +104,7 @@ public class UserThread extends Thread{
 					break;
 			}
 			if(!command.equals("close")){
+				System.out.println("Going to page" + currentPage);
 				saida.println("sending");
 				currentPage = (currentPage < 1) ? 1 : (currentPage > nPages) ? nPages : currentPage;
 				// draw the first page to an image
