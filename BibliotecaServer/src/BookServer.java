@@ -6,26 +6,6 @@ import java.util.Vector;
 
 // Essa classe vai ser do server.
 public class BookServer{
-	/*
-	private class InputReader extends Thread{
-		BookServer server;
-		public InputReader(BookServer s){
-			server = s;
-		}
-
-		public void run(){
-			String input = new String("end");
-			do{
-				try{
-					input = EntradaTeclado.leString();
-				}catch(IOException e){
-				}
-				System.out.println("lido: " + input);
-			}while(!input.equals("end"));
-		}
-	}
-	*/
-
 	private ServerSocket socket;
 	private Socket client;
 	private Vector<UserThread> runningThreads;
@@ -33,15 +13,12 @@ public class BookServer{
 	private volatile Vector<Usuario> userList;
 	private volatile Vector<Livro> bookList;
 	private volatile boolean sorted;
-//	private Livro teste;
 
 	public BookServer(){
 		keepRunning = true;
 		runningThreads = new Vector<UserThread>(1, 5);
 		userList = new Vector<Usuario>(1, 5);
 		bookList = new Vector<Livro>(1, 5);
-//		teste = new Livro("PDFTest.pdf", "teste");
-//		bookList.add(teste);
 		sorted = true;
 	}
 
@@ -71,8 +48,6 @@ public class BookServer{
 		if(searchUser(newUser.getID()) == null){
 			userList.add(newUser);
 			userList.sort(null);
-//			newUser.insertEmprestimo(teste);
-//			newUser.insertUpload(teste);
 			sorted = true;
 			return true;
 		}else
@@ -128,8 +103,6 @@ public class BookServer{
 	}
 
 	public void runServer() throws IOException{
-		//InputReader ir = new InputReader(this);
-		//ir.start();
 		// Cria o servidor
 		socket = new ServerSocket(9669);
 		System.out.println("Porta 9669 aberta");

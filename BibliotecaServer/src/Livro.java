@@ -83,11 +83,6 @@ public class Livro implements Comparable<Livro>{
 		return titulo.equals(l.getTitulo());
 	}
 	
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
-	}
-	
 	//----------Add/Rmv-------------//
 	public int addAcervo(int quant){
 		if(quant>0 && acervo>=0){

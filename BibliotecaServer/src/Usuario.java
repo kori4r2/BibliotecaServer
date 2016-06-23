@@ -314,10 +314,4 @@ public class Usuario implements Comparable<Usuario>{
 		}
 		return ans;
 	}
-						
-			
-	public static void main(String[] args) {
-		
-	}
-
 }
