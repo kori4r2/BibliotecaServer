@@ -388,7 +388,20 @@ public class UserThread extends Thread{
 						}else
 							saida.println("errorNotFound");
 						break;
-					//TO DO: Devolucao de emprestimo
+					// Se for recebida mensagem de devolucao, recebe o nome do livro a ser devolvido
+					case "returnBook":
+						// Busca o livro com o titulo passado na lista de emprestimos do usuario atual
+						System.out.println("searching for book...");
+						title = entrada.nextLine();
+						result = currentUser.getEmprestimo(title);
+						if(result != null){
+							// Caso tenha encontrado, devolve o emprestimo
+							currentUser.removeEmprestimo(result);
+							result.addAcervo(1);
+							saida.println("success");
+						}else
+							saida.println("error");
+						break;
 					//Se for pedido, envia a lista de uploads realizados pelo usuario atual
 					case "uploadList":
 						sendUploadList();

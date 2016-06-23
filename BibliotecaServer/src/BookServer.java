@@ -97,7 +97,7 @@ public class BookServer{
 	public String[] getBookList(){
 		String[] list = new String[bookList.size()];
 		for(int i = 0; i < bookList.size(); i++){
-			list[i] = bookList.elementAt(i).getTitulo() + " " + bookList.elementAt(i).getAcervo();
+			list[i] = bookList.elementAt(i).getTitulo() + " => " + bookList.elementAt(i).getAcervo();
 		}
 		return list;
 	}
