@@ -1,11 +1,11 @@
-import java.util.ArrayList;
+import java.util.Vector;
 
 public class Usuario implements Comparable<Usuario>{
 
 	private int ID;
 	private String senha;
-	private ArrayList<Livro> uploads;
-	private ArrayList<Livro> emprestimos;
+	private Vector<Livro> uploads;
+	private Vector<Livro> emprestimos;
 	
 	@Override
 	public int compareTo(Usuario user1){
@@ -18,8 +18,8 @@ public class Usuario implements Comparable<Usuario>{
 		- novaSenha = Senha do usuario a ser criado
 	*/
 	public Usuario(int novoID, String novaSenha){
-		uploads = new ArrayList<Livro>();
-		emprestimos = new ArrayList<Livro>();
+		uploads = new Vector<Livro>(0, 1);
+		emprestimos = new Vector<Livro>(0, 1);
 		ID = novoID;
 		senha = novaSenha;
 	}
@@ -31,7 +31,7 @@ public class Usuario implements Comparable<Usuario>{
 	}
 
 	//retorna o arraylist uploads
-	public ArrayList<Livro> getUploads(){
+	public Vector<Livro> getUploads(){
 		return uploads;
 	}
 
@@ -40,8 +40,21 @@ public class Usuario implements Comparable<Usuario>{
 		int size = uploads.size();
 		int i;
 		for(i=0; i<size; i++){
-			if(uploads.equals(up)){
-				return uploads.get(i);
+			if(uploads.elementAt(i).compareTo(up) == 0){
+				return uploads.elementAt(i);
+			}
+		}
+		System.out.println("Book not found!");
+		return null;
+	}
+
+	//retorna um livro especifico no arraylist de uploads
+	public Livro getUpload(String title){
+		int size = uploads.size();
+		int i;
+		for(i=0; i<size; i++){
+			if(uploads.elementAt(i).getTitulo().compareTo(title) == 0){
+				return uploads.elementAt(i);
 			}
 		}
 		System.out.println("Book not found!");
@@ -53,15 +66,29 @@ public class Usuario implements Comparable<Usuario>{
 		int size = emprestimos.size();
 		int i;
 		for(i=0; i<size; i++){
-			if(emprestimos.get(i).equals(emp)){
-				return emprestimos.get(i);
+			if(emprestimos.elementAt(i).compareTo(emp) == 0){
+				return emprestimos.elementAt(i);
 			}
 		}
 		System.out.println("Book not found!");
 		return null;
 	}
+
+	//retorna um livro especifico no arraylist de emprestimos
+	public Livro getEmprestimo(String title){
+		int size = emprestimos.size();
+		int i;
+		for(i=0; i<size; i++){
+			if(emprestimos.elementAt(i).getTitulo().compareTo(title) == 0){
+				return emprestimos.elementAt(i);
+			}
+		}
+		System.out.println("Book not found!");
+		return null;
+	}
+
 	//retorna o arraylist emprestimos
-	public ArrayList<Livro> getEmprestimos(){
+	public Vector<Livro> getEmprestimos(){
 		return emprestimos;
 	}
 	
@@ -82,7 +109,7 @@ public class Usuario implements Comparable<Usuario>{
 		int size = uploads.size();
 		int i;
 		for(i=0; i<size; i++){
-			System.out.println(i+1 + "- " + uploads.get(i).getTitulo());
+			System.out.println(i+1 + "- " + uploads.elementAt(i).getTitulo());
 		}
 		return i;
 	}
@@ -92,36 +119,38 @@ public class Usuario implements Comparable<Usuario>{
 		int size = emprestimos.size();
 		int i;
 		for(i=0; i<size; i++){
-			System.out.println(i+1 + "- " + emprestimos.get(i).getTitulo());
+			System.out.println(i+1 + "- " + emprestimos.elementAt(i).getTitulo());
 		}
 		return i;
 	}
 	
 	//-----------Insert/Remove--------------//
 	//Insercao de um livro novo nos emprestimos
-	public boolean insertEmprestimo(Livro novo)throws NullPointerException{
+	public boolean insertEmprestimo(Livro novo){
 		int size = emprestimos.size();
 		int i;
 		for(i=0; i<size; i++){
 			try{
-				if(novo.equals(emprestimos.get(i))){
-					System.out.println("You have already arrended the book: " + novo.getTitulo());
+				if(novo.equals(emprestimos.elementAt(i))){
+					System.out.println("You have already rented the book: " + novo.getTitulo());
 					return false;
 				}
 			}catch(NullPointerException e){
 				System.out.println("Invalid Book");
+				return false;
 			}
 		}
 		emprestimos.add(novo);
+		emprestimos.sort(null);
 		return true;
 	}
 	//insercao de um novo livro nos uploads
-	public boolean insertUpload(Livro novo)throws NullPointerException{
+	public boolean insertUpload(Livro novo){
 		int size = uploads.size();
 		int i;
 		for(i=0; i<size; i++){
 			try{
-				if(novo.equals(uploads.get(i))){
+				if(novo.equals(uploads.elementAt(i))){
 					System.out.println("You have already uploaded the book: " + novo.getTitulo());
 					return false;
 				}
@@ -131,6 +160,7 @@ public class Usuario implements Comparable<Usuario>{
 			}
 		}
 		uploads.add(novo);
+		uploads.sort(null);
 		return true;
 	}
 	//remocao de um livro da lista de emprestimos
@@ -139,6 +169,7 @@ public class Usuario implements Comparable<Usuario>{
 			System.out.println("Book not found!");
 			return false;
 		}
+		emprestimos.sort(null);
 		return true;
 	}
 	//remocao de um livro da lista de uploads
@@ -147,18 +178,19 @@ public class Usuario implements Comparable<Usuario>{
 			System.out.println("Book not found!");
 			return false;
 		}
+		uploads.sort(null);
 		return true;
 	}
 	
 	//------------------ Search uploads --------------------------//
 	
-	public ArrayList<String> searchTitleUploads(String title){
-		ArrayList<String> ans = new ArrayList<String>();
+	public Vector<String> searchTitleUploads(String title){
+		Vector<String> ans = new Vector<String>(0, 1);
 		int size = uploads.size();
 		int i;
 		for(i=0; i<size; i++){
-			if(uploads.get(i).contemTitulo(title)){
-				ans.add(uploads.get(i).getTitulo());
+			if(uploads.elementAt(i).contemTitulo(title)){
+				ans.add(uploads.elementAt(i).getTitulo());
 			}
 		}
 		if(ans.isEmpty()==true){
@@ -168,13 +200,13 @@ public class Usuario implements Comparable<Usuario>{
 		return ans;
 	}
 	
-	public ArrayList<String> searchCategoriaUploads(String category){
-		ArrayList<String> ans = new ArrayList<String>();
+	public Vector<String> searchCategoriaUploads(String category){
+		Vector<String> ans = new Vector<String>();
 		int size = uploads.size();
 		int i;
 		for(i=0; i<size; i++){
-			if(uploads.get(i).contemCategoria(category)){
-				ans.add(uploads.get(i).getCategoria());
+			if(uploads.elementAt(i).contemCategoria(category)){
+				ans.add(uploads.elementAt(i).getCategoria());
 			}
 		}
 		if(ans.isEmpty()==true){
@@ -184,13 +216,13 @@ public class Usuario implements Comparable<Usuario>{
 		return ans;
 	}
 
-	public ArrayList<String> searchEditoraUploads(String editora){
-		ArrayList<String> ans = new ArrayList<String>();
+	public Vector<String> searchEditoraUploads(String editora){
+		Vector<String> ans = new Vector<String>();
 		int size = uploads.size();
 		int i;
 		for(i=0; i<size; i++){
-			if(uploads.get(i).contemEditora(editora)){
-				ans.add(uploads.get(i).getEditora());
+			if(uploads.elementAt(i).contemEditora(editora)){
+				ans.add(uploads.elementAt(i).getEditora());
 			}
 		}
 		if(ans.isEmpty()==true){
@@ -200,13 +232,13 @@ public class Usuario implements Comparable<Usuario>{
 		return ans;
 	}
 	
-	public ArrayList<String> searchAutoresUploads(String autor){
-		ArrayList<String> ans = new ArrayList<String>();
+	public Vector<String> searchAutoresUploads(String autor){
+		Vector<String> ans = new Vector<String>();
 		int size = uploads.size();
 		int i;
 		for(i=0; i<size; i++){
-			if(uploads.get(i).contemAutores(autor)){
-				ans.add(uploads.get(i).getAutores());
+			if(uploads.elementAt(i).contemAutores(autor)){
+				ans.add(uploads.elementAt(i).getAutores());
 			}
 		}
 		if(ans.isEmpty()==true){
@@ -219,13 +251,13 @@ public class Usuario implements Comparable<Usuario>{
 		
 	//------------------ Search emprestimos --------------------------//
 		
-	public ArrayList<String> searchTitleEmprestimos(String title){
-		ArrayList<String> ans = new ArrayList<String>();
+	public Vector<String> searchTitleEmprestimos(String title){
+		Vector<String> ans = new Vector<String>(0, 1);
 		int size = emprestimos.size();
 		int i;
 		for(i=0; i<size; i++){
-			if(emprestimos.get(i).contemTitulo(title)){
-				ans.add(emprestimos.get(i).getTitulo());
+			if(emprestimos.elementAt(i).contemTitulo(title)){
+				ans.add(emprestimos.elementAt(i).getTitulo());
 			}
 		}
 		if(ans.isEmpty()==true){
@@ -235,13 +267,13 @@ public class Usuario implements Comparable<Usuario>{
 		return ans;
 	}
 	
-	public ArrayList<String> searchCategoriaEmprestimos(String category){
-		ArrayList<String> ans = new ArrayList<String>();
+	public Vector<String> searchCategoriaEmprestimos(String category){
+		Vector<String> ans = new Vector<String>(0, 1);
 		int size = emprestimos.size();
 		int i;
 		for(i=0; i<size; i++){
-			if(emprestimos.get(i).contemCategoria(category)){
-				ans.add(emprestimos.get(i).getCategoria());
+			if(emprestimos.elementAt(i).contemCategoria(category)){
+				ans.add(emprestimos.elementAt(i).getCategoria());
 			}
 		}
 		if(ans.isEmpty()==true){
@@ -251,13 +283,13 @@ public class Usuario implements Comparable<Usuario>{
 		return ans;
 	}
 
-	public ArrayList<String> searchEditoraEmprestimos(String editora){
-		ArrayList<String> ans = new ArrayList<String>();
+	public Vector<String> searchEditoraEmprestimos(String editora){
+		Vector<String> ans = new Vector<String>(0, 1);
 		int size = emprestimos.size();
 		int i;
 		for(i=0; i<size; i++){
-			if(emprestimos.get(i).contemEditora(editora)){
-				ans.add(emprestimos.get(i).getEditora());
+			if(emprestimos.elementAt(i).contemEditora(editora)){
+				ans.add(emprestimos.elementAt(i).getEditora());
 			}
 		}
 		if(ans.isEmpty()==true){
@@ -267,13 +299,13 @@ public class Usuario implements Comparable<Usuario>{
 		return ans;
 	}
 	
-	public ArrayList<String> searchAutoresEmprestimos(String autor){
-		ArrayList<String> ans = new ArrayList<String>();
+	public Vector<String> searchAutoresEmprestimos(String autor){
+		Vector<String> ans = new Vector<String>(0, 1);
 		int size = emprestimos.size();
 		int i;
 		for(i=0; i<size; i++){
-			if(emprestimos.get(i).contemAutores(autor)){
-				ans.add(emprestimos.get(i).getAutores());
+			if(emprestimos.elementAt(i).contemAutores(autor)){
+				ans.add(emprestimos.elementAt(i).getAutores());
 			}
 		}
 		if(ans.isEmpty()==true){

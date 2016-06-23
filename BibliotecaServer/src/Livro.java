@@ -1,4 +1,4 @@
-public class Livro {
+public class Livro implements Comparable<Livro>{
 	
 	private String titulo;
 	private String autores;
@@ -7,11 +7,17 @@ public class Livro {
 	private String categoria;
 	private String pdfName;
 	private int acervo;
-	//Construtor que seta o nome do pdf e titulo do livro
+	// Construtor que seta o nome do pdf e titulo do livro
 	public Livro(String pdfname, String title){
 		pdfName = pdfname;
 		titulo = title;
 		acervo = 1;
+	}
+
+	// Funcao de comparacao para ordenar de acordo com o titulo
+	@Override
+	public int compareTo(Livro l){
+		return titulo.compareTo(l.getTitulo());
 	}
 	
 	// --------- Getters --------------------------//

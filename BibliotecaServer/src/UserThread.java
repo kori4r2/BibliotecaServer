@@ -1,7 +1,7 @@
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.awt.Graphics2D;
 import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -20,7 +20,6 @@ public class UserThread extends Thread{
 	private PrintStream saida;
 	private Scanner entrada;
 	private Usuario currentUser;
-	private PDFFile currentPDF;
 
 	// Obtem as informacoes do cliente e do servidor
 	public UserThread(Socket c, BookServer s){
@@ -31,7 +30,7 @@ public class UserThread extends Thread{
 	private Usuario checkUserLogin(String id, String password){
 		int userID = -1;
 		try{
-			Integer.parseInt(id);
+			userID = Integer.parseInt(id);
 		}catch(NumberFormatException e){
 			return null;
 		}
@@ -39,16 +38,7 @@ public class UserThread extends Thread{
 		return server.authenticate(userID, password);
 	}
 
-	private void readPDF(File file) throws Exception{
-		saida.println("reading");
-		RandomAccessFile raf = new RandomAccessFile(file, "r");
-		FileChannel channel = raf.getChannel();
-		ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-		currentPDF = new PDFFile(buf);
-		// draw the first page to an image
-		PDFPage page = currentPDF.getPage(1);
-		int width = 800;
-		int height = 600;
+	private void sendPDFPage(PDFPage page) throws Exception{
 		// get the width and height for the doc at the default zoom -> NOT DEFAULT ZOOM
 		Rectangle rect = new Rectangle((int)page.getPageBox().getX(), (int)page.getPageBox().getY(),
 						(int)page.getWidth(), (int)page.getHeight());
@@ -65,30 +55,137 @@ public class UserThread extends Thread{
 	        ImageIO.write(bImg, "png", byteArrayOutputStream);
 		ImageIO.write(bImg, "png", new File("../testImage/sentTest.png"));
 
+		// Espera o usuario estar pronto para receber
+		String response = entrada.nextLine();
+		if(response.equals("error")){
+			throw new Exception("erro no envio da image (user side)");
+		}
+
 	        byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
 	        outStream.write(size);
 	        outStream.write(byteArrayOutputStream.toByteArray());
-	        outStream.flush();
+//	        outStream.flush();
+		saida.println("success");
+	}
+
+	private void readPDF(File file) throws Exception{
+		saida.println("reading");
+
+		RandomAccessFile raf = new RandomAccessFile(file, "r");
+		FileChannel channel = raf.getChannel();
+		ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+		PDFFile currentPDF = new PDFFile(buf);
+
+		int currentPage = 1;
+		int nPages = currentPDF.getNumPages();
+		// draw the first page to an image
+		PDFPage page = currentPDF.getPage(currentPage);
+		sendPDFPage(page);
+		// Avisa o numero de pagina atual
+		saida.println("" + currentPage);
+		// Avisa o numero maximo de paginas
+		saida.println("" + nPages);
+		String command;
+		do{
+			command = entrada.nextLine();
+			switch(command){
+				case "next":
+					currentPage++;
+					break;
+				case "previous":
+					currentPage--;
+					break;
+				case "choice":
+					String pageString = entrada.nextLine();
+					currentPage = Integer.parseInt(pageString);
+					break;
+				case "close":
+					currentPage = 1;
+					break;
+			}
+			if(!command.equals("close")){
+				saida.println("sending");
+				currentPage = (currentPage < 1) ? 1 : (currentPage > nPages) ? nPages : currentPage;
+				// draw the first page to an image
+				page = currentPDF.getPage(currentPage);
+				sendPDFPage(page);
+				saida.println("" + currentPage);
+			}
+		}while(!command.equals("close"));
 	}
 
 	private void newUpload(String filename) throws Exception{
+		File file = new File("../PDFBooks/" + filename);
+		// Se o pdf ja existe na pasta, evita o upload
+		if(file.exists() && !file.isDirectory()){
+			return;
+		}
+
+		saida.println("upload");
 		InputStream inStream = client.getInputStream();
 		FileOutputStream fOut = new FileOutputStream("../PDFBooks/" + filename);
+		String response = entrada.nextLine();
+		if(response.equals("error")){
+			throw new Exception("invalid file");
+		}
 
+		saida.println("ready");
+		// Recebe o tamanho do arquivo em bytes
 		byte[] sizeAr = new byte[4];
 		inStream.read(sizeAr);
 		int size = ByteBuffer.wrap(sizeAr).asIntBuffer().get();
-//		System.out.println("size read = " + size);
+		// Recebe o arquivo como um array de bytes
 		byte[] myByteArray = new byte[size];
 		int bytesRead = 0;
+		// Garante que recebeu o arquivo inteiro
 		while(bytesRead < size){
 			bytesRead += inStream.read(myByteArray, bytesRead, size-bytesRead);
 		}
-//		System.out.println("Bytes actualy read = " + bytesRead);
+		response = entrada.nextLine();
+		if(response.equals("error")){
+			throw new Exception("upload failed");
+		}
+		// Escreve no novo arquivo criado
 		fOut.write(myByteArray, 0, myByteArray.length);
 		fOut.close();
-//		while(!entrada.nextLine().equals("uploaded")){
-//		}
+	}
+
+	private void removeUpload(Livro book){
+		if(book.getAcervo() > 0){
+			book.rmvAcervo(1);
+			currentUser.removeUpload(book);
+			saida.println("success");
+		}else{
+			if(currentUser.getEmprestimo(book) != null){
+				currentUser.removeEmprestimo(book);
+				currentUser.removeUpload(book);
+				book.addAcervo(1);
+				saida.println("success");
+			}else{
+				saida.println("error");
+			}
+		}
+	}
+
+	private void sendFullList(){
+		String[] list = server.getBookList();
+		for(int i = 0; i < list.length; i++){
+			saida.println(list[i]);
+		}
+	}
+
+	private void sendUploadList(){
+		Vector<Livro> list = currentUser.getUploads();
+		for(int i = 0; i < list.size(); i++){
+			saida.println(list.elementAt(i).getTitulo());
+		}
+	}
+
+	private void sendLoanList(){
+		Vector<Livro> list = currentUser.getEmprestimos();
+		for(int i = 0; i < list.size(); i++){
+			saida.println(list.elementAt(i).getTitulo());
+		}
 	}
 
 	public void run() throws NumberFormatException{
@@ -107,59 +204,169 @@ public class UserThread extends Thread{
 		try{
 			String userInput;
 			while(entrada.hasNextLine()){
-				// Se for enviado o comando de login, recebe as informacoes de usuario e senha
-				// e tenta realizar o login
 				userInput = entrada.nextLine();
 				System.out.println("Input recebido: " + userInput);
-				if(userInput.equals("login")){
-					String id = entrada.nextLine();
-					String password = entrada.nextLine();
-					currentUser = checkUserLogin(id, password);
-					// Envia uma resposta para o cliente com o resultado da operacao
-					if(currentUser != null)
-						saida.println("sucesso");
-					else
-						saida.println("erro");
-//					saida.println("CommandEnd");
-				}else if(userInput.equals("open")){
-					System.out.println("searching for book...");
-					String title = entrada.nextLine();
-					Livro result = server.searchBookTitle(title);
-					if(result != null && result.getAcervo() > 0){
-						File file = new File("../PDFBooks/" + result.getPdf());
-						if(file != null){
-							try{
-								readPDF(file);
-							}catch(Exception e){
-								saida.println("deu ruim");
-								System.out.println(e.getMessage());
-							}
-						}else
-							saida.println("arquivo nao existe");
-					}else
-						saida.println("livro nao esta no acervo");
-				}else if(userInput.equals("upload")){
-					System.out.println("Receiving new upload...");
-					String filename = entrada.nextLine();
-					Livro result = server.searchBookPDF(filename);
-					if(result != null){
-						result.addAcervo(1);
-						saida.println("exists");
-						saida.println("added");
-					}else{
-						saida.println("upload");
-						boolean success = true;
+				boolean success;
+				String title, filename, idString, password;
+				Livro aux, result;
+				int id;
+				switch(userInput){
+					case "newUser":
+						success = true;
+						idString = entrada.nextLine();
+						password = entrada.nextLine();
+						id = -1;
 						try{
-							newUpload(filename);
-						}catch(Exception e){
+							id = Integer.parseInt(idString);
+						}catch(NumberFormatException e){
 							success = false;
-							saida.println("error");
+							saida.println("errorID");
 						}
-						if(success)
-							saida.println("added");
-					}
-				}else if(userInput.equals("disconnect")){
-					saida.println("disconnect");
+						if(success){
+							Usuario newUser = new Usuario(id, password);
+							if(server.addNewUser(newUser)){
+								currentUser = newUser;
+								saida.println("success");
+							}else
+								saida.println("error");
+						}
+						break;
+					// Se for enviado o comando de login, recebe as informacoes de usuario e senha
+					// e tenta realizar o login
+					case "login":
+						idString = entrada.nextLine();
+						password = entrada.nextLine();
+						currentUser = checkUserLogin(idString, password);
+						// Envia uma resposta para o cliente com o resultado da operacao
+						if(currentUser != null)
+							saida.println("success");
+						else
+							saida.println("error");
+						break;
+					case "logout":
+						currentUser = null;
+						saida.println("success");
+						break;
+					case "open":
+						System.out.println("searching for book...");
+						title = entrada.nextLine();
+						result = currentUser.getEmprestimo(title);
+						if(result != null){
+							File file = new File("../PDFBooks/" + result.getPdf());
+							if(file != null){
+								success = true;
+								try{
+									readPDF(file);
+								}catch(Exception e){
+									success = false;
+									saida.println("error");
+									System.out.println(e.getMessage());
+								}
+								if(success)
+									saida.println("success");
+							}else
+								saida.println("errorFile");
+						}else
+							saida.println("errorLoan");
+						break;
+					case "upload":
+						System.out.println("Receiving new upload...");
+						title = entrada.nextLine();
+						filename = entrada.nextLine();
+						success = true;
+
+						// Verifica se os dados passados sao validos
+						result = server.searchBookTitle(title);
+						if(result == null){
+							result = server.searchBookPDF(filename);
+							if(result != null){
+								success = false;
+								saida.println("errorTitle");
+								saida.println(result.getTitulo());
+							}
+						}else{
+							Livro checkResult = server.searchBookPDF(filename);
+							if(checkResult == null){
+								success = false;
+								saida.println("errorFilename");
+								saida.println(result.getPdf());
+							}
+						}
+
+						// Caso sejam, avalia o que deve ser feito
+						if(success){
+							// Se o livro ja existe
+							if(result != null){
+								// Tenta fazer o upload
+								if(currentUser.insertUpload(result)){
+									// Caso consiga, avisa o usuario
+									result.addAcervo(1);
+									saida.println("success");
+								// Caso seja um upload repetido, avisa o usuario
+								}else
+									saida.println("error");
+							// Se o livro nao existe no acervo
+							}else{
+								success = true;
+								try{
+									// Tenta realizar o upload
+									newUpload(filename);
+								}catch(Exception e){
+									// Caso de erro, avisa o usuario
+									success = false;
+									saida.println("error");
+								}
+								// Caso o upload seja bem sucedido
+								if(success){
+									// Adiciona o livro ao acervo e avisa o usuario
+									Livro newBook = new Livro(filename, title);
+									currentUser.insertUpload(newBook);
+									server.addNewBook(newBook);
+									saida.println("success");
+								}
+							}
+							System.out.println("Upload ended");
+						}else
+							System.out.println("Upload error");
+						break;
+					case "rmvUpload":
+						title = entrada.nextLine();
+						result = currentUser.getUpload(title);
+						if(result != null){
+							removeUpload(result);
+						}else
+							saida.println("error");
+						break;
+					case "fullList":
+						sendFullList();
+						saida.println("finished");
+						break;
+					case "newLoan":
+						title = entrada.nextLine();
+						result = server.searchBookTitle(title);
+						if(result != null){
+							if(result.getAcervo() > 0){
+								if(currentUser.insertEmprestimo(result)){
+									result.rmvAcervo(1);
+									saida.println("success");
+								}else
+									saida.println("errorRepeat");
+							}else
+								saida.println("errorNotAvailable");
+						}else
+							saida.println("errorNotFound");
+						break;
+					case "uploadList":
+						sendUploadList();
+						saida.println("finished");
+						break;
+					case "loanList":
+						sendLoanList();
+						saida.println("finished");
+						break;
+					case "disconnect":
+						saida.println("disconnect");
+						break;
 				}
 				System.out.println("Waiting for new command...");
 			}

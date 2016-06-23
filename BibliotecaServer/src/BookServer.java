@@ -26,26 +26,29 @@ public class BookServer{
 	}
 	*/
 
-	private volatile ServerSocket socket;
-	private volatile Socket client;
-	private volatile Vector<UserThread> runningThreads;
+	private ServerSocket socket;
+	private Socket client;
+	private Vector<UserThread> runningThreads;
 	private volatile boolean keepRunning;
 	private volatile Vector<Usuario> userList;
 	private volatile Vector<Livro> bookList;
 	private volatile boolean sorted;
+//	private Livro teste;
 
 	public BookServer(){
 		keepRunning = true;
 		runningThreads = new Vector<UserThread>(1, 5);
 		userList = new Vector<Usuario>(1, 5);
 		bookList = new Vector<Livro>(1, 5);
-		Livro teste = new Livro("PDFTest.pdf", "teste");
-		bookList.add(teste);
+//		teste = new Livro("PDFTest.pdf", "teste");
+//		bookList.add(teste);
 		sorted = true;
 	}
 
 	// Busca binaria pelo usuario com o ID desejado
 	private Usuario searchUser(int ID){
+		if(userList.size() == 0)
+			return null;
 		if(!sorted)
 			userList.sort(null);
 		int start = 0, end = (userList.size() - 1), middle, result;
@@ -64,6 +67,18 @@ public class BookServer{
 		return null;
 	}
 
+	public boolean addNewUser(Usuario newUser){
+		if(searchUser(newUser.getID()) == null){
+			userList.add(newUser);
+			userList.sort(null);
+//			newUser.insertEmprestimo(teste);
+//			newUser.insertUpload(teste);
+			sorted = true;
+			return true;
+		}else
+			return false;
+	}
+
 	public Usuario authenticate(int ID, String password){
 		Usuario u = searchUser(ID);
 		if(u != null){
@@ -73,11 +88,24 @@ public class BookServer{
 		return null;
 	}
 
+	public void addNewBook(Livro newBook){
+		bookList.add(newBook);
+		bookList.sort(null);
+	}
+
 	public Livro searchBookTitle(String title){
-		for(Livro l : bookList){
-			if(l.getTitulo().equals(title)){
+		int start = 0, end = (bookList.size() - 1), middle, result;
+		Livro l;
+		while(start <= end){
+			middle = ((start + end) / 2);
+			l = bookList.elementAt(middle);
+			result = (l.getTitulo().compareTo(title));
+			if(result == 0)
 				return l;
-			}
+			else if(result < 0)
+				start = middle + 1;
+			else
+				end = middle - 1;
 		}
 		return null;
 	}
@@ -89,6 +117,14 @@ public class BookServer{
 			}
 		}
 		return null;
+	}
+
+	public String[] getBookList(){
+		String[] list = new String[bookList.size()];
+		for(int i = 0; i < bookList.size(); i++){
+			list[i] = bookList.elementAt(i).getTitulo() + " " + bookList.elementAt(i).getAcervo();
+		}
+		return list;
 	}
 
 	public void runServer() throws IOException{
