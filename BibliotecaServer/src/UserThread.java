@@ -25,6 +25,7 @@ public class UserThread extends Thread{
 	public UserThread(Socket c, BookServer s){
 		client = c;
 		server = s;
+		currentUser = null;
 	}
 
 	private Usuario checkUserLogin(String id, String password){

@@ -101,7 +101,7 @@ public class Usuario implements Comparable<Usuario>{
 	//--------------------------------//
 	//Funcao que recebe uma string e autentica com a Senha do usuario
 	public boolean autenticar(String senha){
-		return (senha.compareTo(senha) == 0);
+		return (this.senha.compareTo(senha) == 0);
 	}
 	//Funcao que imprime a lista de uploads do usuario
 	public int printUploads(){
